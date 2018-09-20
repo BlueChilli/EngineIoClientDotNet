@@ -398,91 +398,12 @@ Task("PublishPackages")
 	WriteErrorLog("publishing packages failed", "PublishPackages", exception);
 });
 
-Task("CreateRelease")
-    .IsDependentOn("RunUnitTests")
-    .WithCriteria(() => !local)
-    .WithCriteria(() => !isPullRequest)
-    .WithCriteria(() => isRepository)
-    .WithCriteria(() => isReleaseBranch)
-    .WithCriteria(() => !isTagged)
-    .WithCriteria(() => isRunningOnWindows)
-    .Does (() =>
-{
-	using(BuildBlock("CreateRelease"))
-	{
-		var username = EnvironmentVariable("GITHUB_USERNAME");
-		if (string.IsNullOrEmpty(username))
-		{
-			throw new Exception("The GITHUB_USERNAME environment variable is not defined.");
-		}
-
-		var token = EnvironmentVariable("GITHUB_TOKEN");
-		if (string.IsNullOrEmpty(token))
-		{
-			throw new Exception("The GITHUB_TOKEN environment variable is not defined.");
-		}
-
-		GitReleaseManagerCreate(username, token, githubOwner, githubRepository, new GitReleaseManagerCreateSettings {
-			Milestone         = majorMinorPatch,
-			Name              = majorMinorPatch,
-			Prerelease        = true,
-			TargetCommitish   = "master"
-		});
-	};
-
-})
-.OnError(exception => {
-	WriteErrorLog("creating release failed", "CreateRelease", exception);
-});
-
-Task("PublishRelease")
-    .IsDependentOn("RunUnitTests")
-    .WithCriteria(() => !local)
-    .WithCriteria(() => !isPullRequest)
-    .WithCriteria(() => isRepository)
-    .WithCriteria(() => isReleaseBranch)
-    .WithCriteria(() => isTagged)
-    .WithCriteria(() => isRunningOnWindows)
-    .Does (() =>
-{
-	using(BuildBlock("PublishRelease"))
-	{
-		var username = EnvironmentVariable("GITHUB_USERNAME");
-		if (string.IsNullOrEmpty(username))
-		{
-			throw new Exception("The GITHUB_USERNAME environment variable is not defined.");
-		}
-
-		var token = EnvironmentVariable("GITHUB_TOKEN");
-		if (string.IsNullOrEmpty(token))
-		{
-			throw new Exception("The GITHUB_TOKEN environment variable is not defined.");
-		}
-
-		// only push whitelisted packages.
-		foreach(var package in packageWhitelist)
-		{
-			// only push the package which was created during this build run.
-			var packagePath = artifactDirectory + File(string.Concat(package, ".", nugetVersion, ".nupkg"));
-
-			GitReleaseManagerAddAssets(username, token, githubOwner, githubRepository, majorMinorPatch, packagePath);
-		}
-
-		GitReleaseManagerClose(username, token, githubOwner, githubRepository, majorMinorPatch);
-	}; 
-})
-.OnError(exception => {
-	WriteErrorLog("updating release assets failed", "PublishRelease", exception);
-});
-
 //////////////////////////////////////////////////////////////////////
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 
 Task("Default")
-    .IsDependentOn("CreateRelease")
     .IsDependentOn("PublishPackages")
-    .IsDependentOn("PublishRelease")
     .Does (() =>
 {
 
