@@ -1,0 +1,22 @@
+{
+	"productName": "EngineIoClientDotNet",
+	"projectName": "EngineIoClientDotNet",
+	"githubOwner": "Quobject",
+	"githubRepository": "EngineIoClientDotNet",
+	"packageWhiteList": [
+		"EngineIoClientDotNet"
+	],
+	"solutionFile": "../src/EngineIoClientDotNet.netstandard20/EngineIoClientDotNet.netstandard20.sln",
+	"tags": [
+		"Socket-io",
+		"Sockiet-io-engine"
+	],
+	"authors": [
+		"Quobject"
+	],
+	"copyright": "Copyright Quobject",
+	"iconUrl": "https://avatars0.githubusercontent.com/u/5924219?v=3&s=200",
+	"testProjectDll": "",
+	"runUnitTests": false,
+	"artifactDirectory": "../build/artifacts/"
+}
